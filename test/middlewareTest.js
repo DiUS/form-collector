@@ -17,7 +17,14 @@ describe('Middleware', () => {
 
     it('should return form by id')
     it('should throw error when form not found')
-    it('should handle form fetching errors');
+    it('should handle form fetching errors')
+
+  })
+
+
+  describe('sanitizeFormData', () => {
+
+    it('should sanitize form data')
 
   })
 
@@ -25,7 +32,6 @@ describe('Middleware', () => {
   describe('createForm', () => {
 
     it('should successfully create form and return form entity')
-    it('should sanitize form data')
     it('should handle form validation errors')
     it('should handle form saving errors')
 
