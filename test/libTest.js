@@ -31,7 +31,7 @@ describe('Library', () => {
   })
 
 
-  describe('createForm', () => {
+  describe('saveForm', () => {
 
     it('should successfully save form data and return form entity')
     it('should throw error when database is not available')
