@@ -4,5 +4,10 @@ module.exports = {
     "es6": true,
     "node": true
   },
-  "root": true
+  "root": true,
+  "rules": {
+    "max-len": ["error", 120],
+    "no-trailing-spaces": ["error", { "skipBlankLines": true }],
+    "semi": ["warn", "never"]
+  }
 }
