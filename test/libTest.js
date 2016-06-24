@@ -1,16 +1,27 @@
 const assert = require('assert')
+const sinon = require('sinon')
+const ds = require('../src/lib/data_source')
+const lib = require('../src/lib')
 
 
 describe('Library', () => {
 
+  let sandbox = null
+
+  beforeEach(() => {
+    sandbox = sinon.sandbox.create()
+  })
+
+  afterEach(() => {
+    sandbox.restore()
+  })
 
   describe('getForms', () => {
 
     it('should return list of forms')
     it('should support filtering')
     it('should support pagination')
-    it('should throw error when database is not available')
-
+    it('should return error when DB is not available')
   })
 
 
@@ -18,8 +29,7 @@ describe('Library', () => {
 
     it('should return form by id')
     it('should return NULL when form not found by id')
-    it('should throw error when database is not available')
-
+    it('should return error when DB is not available')
   })
 
 
@@ -34,8 +44,7 @@ describe('Library', () => {
   describe('saveForm', () => {
 
     it('should successfully save form data and return form entity')
-    it('should throw error when database is not available')
-    it('should throw error when file storage (S3) is not available')
-
+    it('should return error when DB is not available')
+    it('should return error when file storage (S3) is not available')
   })
 })

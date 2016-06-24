@@ -1,18 +1,12 @@
-const _ = require('lodash')
+const ds = require('./data_source')
+const formsCollectionName = 'forms'
 
 
-const getForms = (opts, cb) => {
-  const _opts = _.assign({}, opts)
-  throw new Error('Not implemented yet')
-}
+const getForms = (opts, cb) => ds.findDB(formsCollectionName, opts, cb)
+const getFormById = (id, cb) => getForms({ id }, cb)
 
 
-const getFormById = (id, cb) => {
-  throw new Error('Not implemented yet')
-}
-
-
-const validateForm = (formData, cb) => {
+const validateForm = (formData) => {
   throw new Error('Not implemented yet')
 }
 

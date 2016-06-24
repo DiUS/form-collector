@@ -1,3 +1,6 @@
+const _ = require('lodash')
+
+
 const getForms = (opts, cb) => {
   const _opts = _.assign({}, opts)
   throw new Error('Not implemented yet')
