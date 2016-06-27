@@ -54,6 +54,7 @@ describe('Data source', () => {
 
 
     describe('findDB', () => {
+
       beforeEach((done) => {
         sandbox.stub(DBClient, 'connect', (url, cb) => cb(null, db))
         ds.connectDB({}, done)
@@ -80,6 +81,44 @@ describe('Data source', () => {
           assert.ifError(err)
           assert(db.collections.forms.find.calledOnce)
           assert(!_.isEmpty(forms))
+          done()
+        })
+      })
+    })
+
+
+    describe('saveDB', () => {
+
+      beforeEach((done) => {
+        sandbox.stub(DBClient, 'connect', (url, cb) => cb(null, db))
+        ds.connectDB({}, done)
+      })
+
+      it('should return error when DB is not available', (done) => {
+        ds.disconnectDB()
+        ds.saveDB('forms', {}, (err) => {
+          assert.deepEqual(err, error.DBNotAvailable)
+          done()
+        })
+      })
+
+      it('should return error when collection not found in DB', (done) => {
+        ds.saveDB('unknown', {}, (err) => {
+          assert.deepEqual(err, error.DBCollectionNotFound('unknown'))
+          done()
+        })
+      })
+
+      it('should insert document and return document data', (done) => {
+        const formMock = { firstName: 'Joe', lastName: 'Smith' }
+        ds.saveDB('forms', formMock, (err, newForm) => {
+          assert.ifError(err)
+          // formMock and newForm should refer to different Objects
+          assert.notEqual(newForm, formMock)
+          // newForm should have _id field automatically generated
+          assert(newForm._id)
+          assert.equal(newForm.firstName, 'Joe')
+          assert.equal(newForm.lastName, 'Smith')
           done()
         })
       })
