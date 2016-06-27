@@ -31,9 +31,7 @@ const validateForm = (formData) => {
 }
 
 
-const saveForm = (formData, cb) => {
-  throw new Error('Not implemented yet')
-}
+const saveForm = (formData, cb) => ds.saveDB(formsCollectionName, formData, cb)
 
 
 module.exports = { getForms, getFormById, validateForm, saveForm }

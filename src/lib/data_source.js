@@ -34,15 +34,27 @@ const disconnectDB = () => {
 }
 
 
-const findDB = (collectionName, opts, cb) => {
+const validateDBAndCollection = (collectionName) => {
   const db = getDB()
-  if (!db) return cb(error.DBNotAvailable)
+  if (!db) return error.DBNotAvailable
 
   const collection = db.collection(collectionName)
-  if (!collection) return cb(error.DBCollectionNotFound(collectionName))
+  if (!collection) return error.DBCollectionNotFound(collectionName)
 
-  collection.find(opts, cb)
+  return collection
 }
 
 
-module.exports = { connectDB, disconnectDB, getDB, setDB, findDB }
+const findDB = (collectionName, opts, cb) => {
+  const collection = validateDBAndCollection(collectionName)
+  return (collection instanceof Error) ? cb(collection) : collection.find(opts, cb)
+}
+
+
+const saveDB = (collectionName, data, cb) => {
+  const collection = validateDBAndCollection(collectionName)
+  return (collection instanceof Error) ? cb(collection) : collection.insert(data, cb)
+}
+
+
+module.exports = { connectDB, disconnectDB, getDB, setDB, findDB, saveDB }

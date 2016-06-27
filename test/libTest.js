@@ -9,6 +9,7 @@ const lib = require('../src/lib')
 describe('Library', () => {
 
   let sandbox = null
+  const formMock = { firstName: 'Joe', lastName: 'Smith' }
 
   beforeEach(() => {
     sandbox = sinon.sandbox.create()
@@ -111,7 +112,7 @@ describe('Library', () => {
     // NOTE: please add tests of other validation rules here
 
     it('should successfully validate form', () => {
-      let isValid = lib.validateForm({ firstName: 'Joe', lastName: 'Smith' })
+      let isValid = lib.validateForm(formMock)
       assert.equal(isValid, true)
     })
   })
@@ -119,8 +120,24 @@ describe('Library', () => {
 
   describe('saveForm', () => {
 
-    it('should successfully save form data and return form entity')
-    it('should return error when DB is not available')
+    it('should successfully save form data and return form entity', (done) => {
+      lib.saveForm(formMock, (err, newForm) => {
+        assert.ifError(err)
+        assert(newForm._id)
+        assert.equal(newForm.firstName, 'Joe')
+        assert.equal(newForm.lastName, 'Smith')
+        done()
+      })
+    })
+
+    it('should return error when DB is not available', (done) => {
+      ds.disconnectDB()
+      lib.saveForm(formMock, (err) => {
+        assert.deepEqual(err, error.DBNotAvailable)
+        done()
+      })
+    })
+
     it('should return error when file storage (S3) is not available')
   })
 })
