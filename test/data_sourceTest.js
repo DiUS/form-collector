@@ -4,6 +4,7 @@ const DBClient = require('mongodb').MongoClient
 const sinon = require('sinon')
 const db = require('./mocks/db')
 const ds = require('../src/lib/data_source')
+const error = require('../src/lib/error')
 
 
 describe('Data source', () => {
@@ -25,11 +26,12 @@ describe('Data source', () => {
     describe('connectDB and disconnectDB', () => {
 
       it('should handle DB connection errors', (done) => {
-        sandbox.stub(DBClient, 'connect', (url, cb) => cb(new Error('Connection error')))
+        const connectionError = new Error('Connection error')
+        sandbox.stub(DBClient, 'connect', (url, cb) => cb(connectionError))
 
         ds.disconnectDB()
         ds.connectDB({}, (err) => {
-          assert.equal(err.message, 'Connection error')
+          assert.deepEqual(err, connectionError)
           assert(!ds.getDB())
           done()
         })
@@ -60,14 +62,14 @@ describe('Data source', () => {
       it('should return error when DB is not available', (done) => {
         ds.disconnectDB()
         ds.findDB('forms', {}, (err) => {
-          assert.equal(err.message, 'DataBase is not available now')
+          assert.deepEqual(err, error.DBNotAvailable)
           done()
         })
       })
 
       it('should return error when collection not found in DB', (done) => {
         ds.findDB('unknown', {}, (err) => {
-          assert.equal(err.message, 'DataBase collection \'unknown\' not found')
+          assert.deepEqual(err, error.DBCollectionNotFound('unknown'))
           done()
         })
       })
