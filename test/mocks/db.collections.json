@@ -1,7 +1,0 @@
-{
-  "forms": [
-    { "_id": 1, "source": "contactUs", "firstName": "John", "lastName": "Doe" },
-    { "_id": 2, "source": "contactUs", "firstName": "Jack", "lastName": "Sparrow" },
-    { "_id": 3, "source": "contactUs", "firstName": "Luke", "lastName": "Skywalker" }
-  ]
-}
