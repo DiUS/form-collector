@@ -1,4 +1,6 @@
 const ds = require('./data_source')
+const _ = require('lodash')
+const error = require('./error')
 const formsCollectionName = 'forms'
 
 
@@ -15,7 +17,17 @@ const getFormById = (id, cb) => {
 
 
 const validateForm = (formData) => {
-  throw new Error('Not implemented yet')
+  if (!_.isObject(formData)) return error.InvalidFormDataObject
+  const invalidFields = []
+
+  if (!formData.firstName) invalidFields.push('firstName')
+  if (!formData.lastName) invalidFields.push('lastName')
+
+  // NOTE: add other required fields checks here
+
+  if (invalidFields.length) return error.InvalidFormDataFields(invalidFields)
+
+  return true
 }
 
 

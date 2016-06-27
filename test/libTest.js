@@ -2,6 +2,7 @@ const assert = require('assert')
 const sinon = require('sinon')
 const db = require('./mocks/db')
 const ds = require('../src/lib/data_source')
+const error = require('../src/lib/error')
 const lib = require('../src/lib')
 
 
@@ -51,7 +52,7 @@ describe('Library', () => {
     it('should return error when DB is not available', (done) => {
       ds.disconnectDB()
       lib.getForms({}, (err) => {
-        assert.equal(err.message, 'DataBase is not available now')
+        assert.deepEqual(err, error.DBNotAvailable)
         done()
       })
     })
@@ -82,7 +83,7 @@ describe('Library', () => {
     it('should return error when DB is not available', (done) => {
       ds.disconnectDB()
       lib.getFormById(2, (err) => {
-        assert.equal(err.message, 'DataBase is not available now')
+        assert.deepEqual(err, error.DBNotAvailable)
         done()
       })
     })
@@ -91,9 +92,28 @@ describe('Library', () => {
 
   describe('validateForm', () => {
 
-    it('should successfully validate form')
-    // please add tests of validation rules bellow
+    it('should return error when invalid form object found', () => {
+      let isValid = lib.validateForm()
+      assert.deepEqual(isValid, error.InvalidFormDataObject)
 
+      isValid = lib.validateForm(1)
+      assert.deepEqual(isValid, error.InvalidFormDataObject)
+
+      isValid = lib.validateForm(null)
+      assert.deepEqual(isValid, error.InvalidFormDataObject)
+    })
+
+    it('should validate firstName and lastName', () => {
+      let isValid = lib.validateForm({})
+      assert.deepEqual(isValid, error.InvalidFormDataFields(['firstName', 'lastName']))
+    })
+
+    // NOTE: please add tests of other validation rules here
+
+    it('should successfully validate form', () => {
+      let isValid = lib.validateForm({ firstName: 'Joe', lastName: 'Smith' })
+      assert.equal(isValid, true)
+    })
   })
 
 
