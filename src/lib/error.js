@@ -7,7 +7,12 @@ const InvalidFormDataObject = new Error('Invalid Form Data Object')
 const InvalidFormDataFields = (invalidFields) =>
   new Error(`Form Data contains invalid fields: ${invalidFields.join(', ')}`)
 
+// Middleware errors
+const FormNotFound = new Error('Form not found')
+
+
 module.exports = {
   DBNotAvailable, DBCollectionNotFound,
-  InvalidFormDataObject, InvalidFormDataFields
+  InvalidFormDataObject, InvalidFormDataFields,
+  FormNotFound
 }

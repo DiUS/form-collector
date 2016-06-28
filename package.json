@@ -17,7 +17,9 @@
     "supertest": "^1.2.0"
   },
   "dependencies": {
+    "body-parser": "^1.15.2",
     "express": "^4.14.0",
+    "express-validator": "^2.20.8",
     "lodash": "^4.13.1",
     "mongodb": "^2.1.18"
   }
