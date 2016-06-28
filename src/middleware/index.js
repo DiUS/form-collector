@@ -13,7 +13,7 @@ const getForms = (req, res, next) => {
 const getFormById = (req, res, next) => {
   lib.getFormById(req.params.id, (err, form) => {
     if (err) return next(err)
-    if (!form) return res.status(404).send(error.FormNotFound.message)
+    if (!form) return res.status(404).send({ error: error.FormNotFound.message })
     res.send(form)
   })
 }
@@ -33,7 +33,12 @@ const createForm = (req, res, next) => {
   const formData = req.body
   const isValidFormData = lib.validateForm(formData)
 
-  if (isValidFormData !== true) return next(isValidFormData)
+  if (isValidFormData !== true) {
+    // return next(isValidFormData)
+    // TODO: keep calling next, move error status ligic to error middleware
+    return res.status(400).send({ error: isValidFormData.message })
+  }
+
   lib.saveForm(formData, (err, newForm) => {
     if (err) return next(err)
     res.send(newForm)
