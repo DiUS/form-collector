@@ -1,5 +1,5 @@
 const _ = require('lodash')
-const collections = require('./db.collections')
+const collections = { forms: require('../../dbseed/forms.collection') }
 
 
 const db = Object.create(null, {
