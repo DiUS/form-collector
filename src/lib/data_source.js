@@ -6,7 +6,7 @@
  * - Other external data source references
  */
 const DBClient = require('mongodb').MongoClient
-const error = require('./error')
+const { DBNotAvailable, DBCollectionNotFound, DBError } = require('./error')
 
 let _db = null
 const getDB = () => _db
@@ -18,7 +18,7 @@ const connectDB = (opts, cb) => {
 
   // TODO: get connection string from opts
   DBClient.connect(opts, (err, db) => {
-    if (err) return cb(err)
+    if (err) return cb(new DBError(err))
     setDB(db)
     cb()
   })
@@ -36,10 +36,10 @@ const disconnectDB = () => {
 
 const validateDBAndCollection = (collectionName) => {
   const db = getDB()
-  if (!db) return error.DBNotAvailable
+  if (!db) return new DBNotAvailable()
 
   const collection = db.collection(collectionName)
-  if (!collection) return error.DBCollectionNotFound(collectionName)
+  if (!collection) return new DBCollectionNotFound(collectionName)
 
   return collection
 }

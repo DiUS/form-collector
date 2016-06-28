@@ -2,7 +2,7 @@ const assert = require('assert')
 const expressValidator = require('express-validator')
 const _ = require('lodash')
 const sinon = require('sinon')
-const error = require('../src/lib/error')
+const { DBError, InvalidFormDataObject, FormNotFound } = require('../src/lib/error')
 const lib = require('../src/lib')
 const middleware = require('../src/middleware')
 const requestMock = require('./mocks/request')
@@ -12,8 +12,8 @@ const formsCollection = require('../dbseed/forms.collection')
 
 describe('Middleware', () => {
 
-  const formsFetchError = new Error('Forms Fetch Error')
-  const formSaveError = new Error('Form cannot be saved')
+  const formsFetchError = new DBError('Forms Fetch Error')
+  const formSaveError = new DBError('Form cannot be saved')
   const formMock = Object.assign({}, formsCollection[0])
   let sandbox = null
 
@@ -41,7 +41,7 @@ describe('Middleware', () => {
     it('should handle forms fetching errors', (done) => {
       sandbox.stub(lib, 'getForms', (opts, cb) => cb(formsFetchError))
       middleware.getForms(requestMock(), {}, (err) => {
-        assert.deepEqual(err, formsFetchError)
+        assert(err instanceof DBError)
         assert(lib.getForms.calledOnce)
         done()
       })
@@ -63,17 +63,16 @@ describe('Middleware', () => {
 
     it('should return error when form not found', (done) => {
       sandbox.stub(lib, 'getFormById', (id, cb) => cb(null, null))
-      const send = (err) => {
-        assert.deepEqual(err, { error: error.FormNotFound.message })
+      middleware.getFormById(requestMock(), responseMock(), (err) => {
+        assert(err instanceof FormNotFound)
         done()
-      }
-      middleware.getFormById(requestMock(), responseMock(send), done)
+      })
     })
 
     it('should handle form fetching errors', (done) => {
       sandbox.stub(lib, 'getFormById', (id, cb) => cb(formsFetchError))
       middleware.getFormById(requestMock(), responseMock(), (err) => {
-        assert.deepEqual(err, formsFetchError)
+        assert(err instanceof DBError)
         assert(lib.getFormById.calledOnce)
         done()
       })
@@ -110,26 +109,20 @@ describe('Middleware', () => {
     })
 
     it('should handle form validation errors', (done) => {
-      sandbox.stub(lib, 'validateForm', () => error.InvalidFormDataObject)
+      sandbox.stub(lib, 'validateForm', () => new InvalidFormDataObject())
       sandbox.spy(lib, 'saveForm')
-      const send = (err) => {
-        assert.deepEqual(err, { error: error.InvalidFormDataObject.message })
+      middleware.createForm(requestMock(), responseMock(), (err) => {
+        assert(err instanceof InvalidFormDataObject)
         assert(!lib.saveForm.called)
         done()
-      }
-      // middleware.createForm(requestMock(), responseMock(), (err) => {
-      //   assert.deepEqual(err, error.InvalidFormDataObject)
-      //   assert(!lib.saveForm.called)
-      //   done()
-      // })
-      middleware.createForm(requestMock(), responseMock(send), done)
+      })
     })
 
     it('should handle form saving errors', (done) => {
       sandbox.stub(lib, 'validateForm', () => true)
       sandbox.stub(lib, 'saveForm', (fromData, cb) => cb(formSaveError))
       middleware.createForm(requestMock(), responseMock(), (err) => {
-        assert.deepEqual(err, formSaveError)
+        assert(err instanceof DBError)
         assert(lib.saveForm.calledOnce)
         done()
       })

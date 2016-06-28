@@ -1,6 +1,6 @@
 const ds = require('./data_source')
 const _ = require('lodash')
-const error = require('./error')
+const { InvalidFormDataObject, InvalidFormDataFields } = require('./error')
 const formsCollectionName = 'forms'
 
 
@@ -17,7 +17,7 @@ const getFormById = (id, cb) => {
 
 
 const validateForm = (formData) => {
-  if (!_.isObject(formData)) return error.InvalidFormDataObject
+  if (!_.isObject(formData)) return new InvalidFormDataObject()
   const invalidFields = []
 
   if (!formData.firstName) invalidFields.push('firstName')
@@ -25,7 +25,7 @@ const validateForm = (formData) => {
 
   // NOTE: add other required fields checks here
 
-  if (invalidFields.length) return error.InvalidFormDataFields(invalidFields)
+  if (invalidFields.length) return new InvalidFormDataFields(invalidFields)
 
   return true
 }

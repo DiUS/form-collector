@@ -1,4 +1,14 @@
+const { InvalidFormError, NotFoundError } = require('../lib/error')
+
 const NODE_ENV = process.env.NODE_ENV
+
+
+const getStatus = (err) => {
+  if (err instanceof InvalidFormError) return 400
+  if (err instanceof NotFoundError) return 404
+  return 500
+}
+
 
 /* eslint-disable no-unused-vars */
 module.exports = (err, req, res, next) => {
@@ -8,5 +18,8 @@ module.exports = (err, req, res, next) => {
     /* eslint-enable no-console */
   }
 
-  res.status(500).send({ error: err.message })
+  res.status(getStatus(err)).send({ error: err.message.replace(/error:/gi, '').trim() })
 }
+
+
+module.exports._getStatus = getStatus

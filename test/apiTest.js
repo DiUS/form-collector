@@ -3,7 +3,6 @@ const req = require('supertest')
 const sinon = require('sinon')
 const app = require('../src/server')
 const ds = require('../src/lib/data_source')
-const error = require('../src/lib/error')
 const formsCollection = require('../dbseed/forms.collection')
 
 
@@ -38,7 +37,7 @@ describe('API', () => {
         .get('/')
         .expect(500, (err, res) => {
           assert.ifError(err)
-          assert.deepEqual(res.body, { error: error.DBNotAvailable.message })
+          assert.deepEqual(res.body, { error: 'DataBase is not available now' })
           done()
         })
     })
@@ -66,7 +65,7 @@ describe('API', () => {
         .expect('Content-Type', /json/)
         .expect(404, (err, res) => {
           assert.ifError(err)
-          assert.deepEqual(res.body, { error: error.FormNotFound.message })
+          assert.deepEqual(res.body, { error: 'Form not found' })
           done()
         })
     })
@@ -77,7 +76,7 @@ describe('API', () => {
         .get('/1')
         .expect(500, (err, res) => {
           assert.ifError(err)
-          assert.deepEqual(res.body, { error: error.DBNotAvailable.message })
+          assert.deepEqual(res.body, { error: 'DataBase is not available now' })
           done()
         })
     })
@@ -94,7 +93,7 @@ describe('API', () => {
         .send({})
         .expect(400, (err, res) => {
           assert.ifError(err)
-          assert.deepEqual(res.body, { error: error.InvalidFormDataFields([ 'firstName', 'lastName' ]).message })
+          assert.deepEqual(res.body, { error: 'Form Data contains invalid fields: firstName, lastName' })
           done()
         })
     })
@@ -106,7 +105,7 @@ describe('API', () => {
         .send({ firstName: 'John', lastName: 'Smith' })
         .expect(500, (err, res) => {
           assert.ifError(err)
-          assert.deepEqual(res.body, { error: error.DBNotAvailable.message })
+          assert.deepEqual(res.body, { error: 'DataBase is not available now' })
           done()
         })
     })

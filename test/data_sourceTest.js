@@ -4,7 +4,7 @@ const DBClient = require('mongodb').MongoClient
 const sinon = require('sinon')
 const db = require('./mocks/db')
 const ds = require('../src/lib/data_source')
-const error = require('../src/lib/error')
+const { DBNotAvailable, DBCollectionNotFound, DBError } = require('../src/lib/error')
 
 
 describe('Data source', () => {
@@ -26,6 +26,7 @@ describe('Data source', () => {
         sandbox.stub(DBClient, 'connect', (url, cb) => cb(connectionError))
 
         ds.connectDB({}, (err) => {
+          assert(err instanceof DBError)
           assert.deepEqual(err, connectionError)
           assert(!ds.getDB())
           done()
@@ -58,14 +59,14 @@ describe('Data source', () => {
         it('should return error when DB is not available', (done) => {
           ds.disconnectDB()
           ds.findDB('forms', {}, (err) => {
-            assert.deepEqual(err, error.DBNotAvailable)
+            assert(err instanceof DBNotAvailable)
             done()
           })
         })
 
         it('should return error when collection not found in DB', (done) => {
           ds.findDB('unknown', {}, (err) => {
-            assert.deepEqual(err, error.DBCollectionNotFound('unknown'))
+            assert.deepEqual(err, new DBCollectionNotFound('unknown'))
             done()
           })
         })
@@ -87,14 +88,14 @@ describe('Data source', () => {
         it('should return error when DB is not available', (done) => {
           ds.disconnectDB()
           ds.saveDB('forms', {}, (err) => {
-            assert.deepEqual(err, error.DBNotAvailable)
+            assert(err instanceof DBNotAvailable)
             done()
           })
         })
 
         it('should return error when collection not found in DB', (done) => {
           ds.saveDB('unknown', {}, (err) => {
-            assert.deepEqual(err, error.DBCollectionNotFound('unknown'))
+            assert(err instanceof DBCollectionNotFound)
             done()
           })
         })
