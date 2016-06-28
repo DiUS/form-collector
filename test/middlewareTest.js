@@ -64,7 +64,7 @@ describe('Middleware', () => {
     it('should return error when form not found', (done) => {
       sandbox.stub(lib, 'getFormById', (id, cb) => cb(null, null))
       const send = (err) => {
-        assert.deepEqual(err, error.FormNotFound.message)
+        assert.deepEqual(err, { error: error.FormNotFound.message })
         done()
       }
       middleware.getFormById(requestMock(), responseMock(send), done)
@@ -112,11 +112,17 @@ describe('Middleware', () => {
     it('should handle form validation errors', (done) => {
       sandbox.stub(lib, 'validateForm', () => error.InvalidFormDataObject)
       sandbox.spy(lib, 'saveForm')
-      middleware.createForm(requestMock(), responseMock(), (err) => {
-        assert.deepEqual(err, error.InvalidFormDataObject)
+      const send = (err) => {
+        assert.deepEqual(err, { error: error.InvalidFormDataObject.message })
         assert(!lib.saveForm.called)
         done()
-      })
+      }
+      // middleware.createForm(requestMock(), responseMock(), (err) => {
+      //   assert.deepEqual(err, error.InvalidFormDataObject)
+      //   assert(!lib.saveForm.called)
+      //   done()
+      // })
+      middleware.createForm(requestMock(), responseMock(send), done)
     })
 
     it('should handle form saving errors', (done) => {
