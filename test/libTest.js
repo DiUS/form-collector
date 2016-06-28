@@ -2,7 +2,7 @@ const assert = require('assert')
 const sinon = require('sinon')
 const db = require('./mocks/db')
 const ds = require('../src/lib/data_source')
-const error = require('../src/lib/error')
+const { DBError, InvalidFormDataObject, InvalidFormDataFields } = require('../src/lib/error')
 const lib = require('../src/lib')
 
 
@@ -53,7 +53,7 @@ describe('Library', () => {
     it('should return error when DB is not available', (done) => {
       ds.disconnectDB()
       lib.getForms({}, (err) => {
-        assert.deepEqual(err, error.DBNotAvailable)
+        assert(err instanceof DBError)
         done()
       })
     })
@@ -84,7 +84,7 @@ describe('Library', () => {
     it('should return error when DB is not available', (done) => {
       ds.disconnectDB()
       lib.getFormById(2, (err) => {
-        assert.deepEqual(err, error.DBNotAvailable)
+        assert(err instanceof DBError)
         done()
       })
     })
@@ -95,18 +95,18 @@ describe('Library', () => {
 
     it('should return error when invalid form object found', () => {
       let isValid = lib.validateForm()
-      assert.deepEqual(isValid, error.InvalidFormDataObject)
+      assert(isValid instanceof InvalidFormDataObject)
 
       isValid = lib.validateForm(1)
-      assert.deepEqual(isValid, error.InvalidFormDataObject)
+      assert(isValid instanceof InvalidFormDataObject)
 
       isValid = lib.validateForm(null)
-      assert.deepEqual(isValid, error.InvalidFormDataObject)
+      assert(isValid instanceof InvalidFormDataObject)
     })
 
     it('should validate firstName and lastName', () => {
       let isValid = lib.validateForm({})
-      assert.deepEqual(isValid, error.InvalidFormDataFields(['firstName', 'lastName']))
+      assert(isValid instanceof InvalidFormDataFields)
     })
 
     // NOTE: please add tests of other validation rules here
@@ -133,7 +133,7 @@ describe('Library', () => {
     it('should return error when DB is not available', (done) => {
       ds.disconnectDB()
       lib.saveForm(formMock, (err) => {
-        assert.deepEqual(err, error.DBNotAvailable)
+        assert(err instanceof DBError)
         done()
       })
     })

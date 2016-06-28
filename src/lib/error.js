@@ -1,18 +1,58 @@
 // DataBase errors
-const DBNotAvailable = new Error('DataBase is not available now')
-const DBCollectionNotFound = (collectionName) => new Error(`DataBase collection '${collectionName}' not found`)
+class DBError extends Error {
+  constructor(err) {
+    super(err)
+  }
+}
+
+class DBNotAvailable extends DBError {
+  constructor() {
+    super(new Error('DataBase is not available now'))
+  }
+}
+
+class DBCollectionNotFound extends DBError {
+  constructor(collectionName) {
+    super(new Error(`DataBase collection '${collectionName}' not found`))
+  }
+}
+
 
 // Form validation errors
-const InvalidFormDataObject = new Error('Invalid Form Data Object')
-const InvalidFormDataFields = (invalidFields) =>
-  new Error(`Form Data contains invalid fields: ${invalidFields.join(', ')}`)
+class InvalidFormError extends Error {
+  constructor(err) {
+    super(err)
+  }
+}
 
-// Middleware errors
-const FormNotFound = new Error('Form not found')
+class InvalidFormDataObject extends InvalidFormError {
+  constructor() {
+    super(new Error('Invalid Form Data Object'))
+  }
+}
+
+class InvalidFormDataFields extends InvalidFormError {
+  constructor(invalidFields) {
+    super(new Error(`Form Data contains invalid fields: ${invalidFields.join(', ')}`))
+  }
+}
+
+// Resource errors
+class NotFoundError extends Error {
+  constructor(err) {
+    super(err)
+  }
+}
+
+class FormNotFound extends NotFoundError {
+  constructor() {
+    super(new Error('Form not found'))
+  }
+}
 
 
 module.exports = {
-  DBNotAvailable, DBCollectionNotFound,
-  InvalidFormDataObject, InvalidFormDataFields,
-  FormNotFound
+  DBError, DBNotAvailable, DBCollectionNotFound,
+  InvalidFormError, InvalidFormDataObject, InvalidFormDataFields,
+  NotFoundError, FormNotFound
 }

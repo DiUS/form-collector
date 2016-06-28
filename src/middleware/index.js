@@ -1,4 +1,4 @@
-const error = require('../lib/error')
+const { FormNotFound } = require('../lib/error')
 const lib = require('../lib')
 
 
@@ -13,7 +13,7 @@ const getForms = (req, res, next) => {
 const getFormById = (req, res, next) => {
   lib.getFormById(req.params.id, (err, form) => {
     if (err) return next(err)
-    if (!form) return res.status(404).send({ error: error.FormNotFound.message })
+    if (!form) return next(new FormNotFound())
     res.send(form)
   })
 }
@@ -33,11 +33,7 @@ const createForm = (req, res, next) => {
   const formData = req.body
   const isValidFormData = lib.validateForm(formData)
 
-  if (isValidFormData !== true) {
-    // return next(isValidFormData)
-    // TODO: keep calling next, move error status ligic to error middleware
-    return res.status(400).send({ error: isValidFormData.message })
-  }
+  if (isValidFormData !== true) return next(isValidFormData)
 
   lib.saveForm(formData, (err, newForm) => {
     if (err) return next(err)
