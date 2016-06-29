@@ -4,6 +4,7 @@
   "description": "Form data collector",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
     "lint": "eslint .",
     "test": "mocha ./test/**/*Test.js"
   },
