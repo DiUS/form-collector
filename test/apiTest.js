@@ -2,17 +2,19 @@ const assert = require('assert')
 const req = require('supertest')
 const sinon = require('sinon')
 const app = require('../src/server')
+const dbMock = require('./mocks/db')
 const ds = require('../src/lib/data_source')
-const formsCollection = require('../dbseed/forms.collection')
+const forms = require('../dbseed/forms.collection')
 
 
 describe('API', () => {
 
+  const formMock = { firstName: 'John', lastName: 'Smith' }
   let sandbox = null
 
   beforeEach(() => {
     sandbox = sinon.sandbox.create()
-    ds.setDB({})
+    ds.setDB(dbMock)
   })
 
   afterEach(() => sandbox.restore())
@@ -20,13 +22,13 @@ describe('API', () => {
   describe('GET /', () => {
 
     it('should response `200` and return a list of found forms', (done) => {
-      sandbox.stub(ds, 'findDB', (collectionName, opts, cb) => cb(null, formsCollection))
+      sandbox.stub(ds, 'findDB', (collectionName, opts, cb) => cb(null, forms))
       req(app)
         .get('/')
         .expect('Content-Type', /json/)
         .expect(200, (err, res) => {
           assert.ifError(err)
-          assert.deepEqual(res.body, formsCollection)
+          assert.deepEqual(res.body, forms)
           done()
         })
     })
@@ -47,13 +49,13 @@ describe('API', () => {
   describe('GET /:id', () => {
 
     it('should response `200` and return form data', (done) => {
-      sandbox.stub(ds, 'findDB', (collectionName, opts, cb) => cb(null, [ formsCollection[ 0 ] ]))
+      sandbox.stub(ds, 'findDB', (collectionName, opts, cb) => cb(null, [ forms[ 0 ] ]))
       req(app)
         .get('/1')
         .expect('Content-Type', /json/)
         .expect(200, (err, res) => {
           assert.ifError(err)
-          assert.deepEqual(res.body, formsCollection[ 0 ])
+          assert.deepEqual(res.body, forms[ 0 ])
           done()
         })
     })
@@ -85,7 +87,17 @@ describe('API', () => {
 
   describe('POST /', () => {
 
-    it('should response `201` and return created form data')
+    it('should response `201` and return created form data', (done) => {
+      sandbox.stub(ds, 'saveDB', (collectionName, opts, cb) => cb(null, formMock))
+      req(app)
+        .post('/')
+        .send(formMock)
+        .expect(201, (err, res) => {
+          assert.ifError(err)
+          assert.deepEqual(res.body, formMock)
+          done()
+        })
+    })
 
     it('should response `400` and return client error (e.g. form valiedation error)', (done) => {
       req(app)
@@ -102,7 +114,7 @@ describe('API', () => {
       ds.setDB(null)
       req(app)
         .post('/')
-        .send({ firstName: 'John', lastName: 'Smith' })
+        .send(formMock)
         .expect(500, (err, res) => {
           assert.ifError(err)
           assert.deepEqual(res.body, { error: 'DataBase is not available now' })

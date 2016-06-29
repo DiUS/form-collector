@@ -37,7 +37,7 @@ const createForm = (req, res, next) => {
 
   lib.saveForm(formData, (err, newForm) => {
     if (err) return next(err)
-    res.send(newForm)
+    res.status(201).send(newForm)
   })
 }
 
