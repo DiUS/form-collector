@@ -1,0 +1,18 @@
+{
+  "serverApp": {
+    "port": 3000
+  },
+  "db": {
+    "url": {
+      "protocol": "mongodb",
+      "host": "localhost",
+      "port": 27017,
+      "name": "form-collector"
+    },
+    "connection": {
+      "reconnectTries": 600,
+      "reconnectInterval": 1000,
+      "bufferMaxEntries": 0
+    }
+  }
+}

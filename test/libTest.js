@@ -1,8 +1,9 @@
 const assert = require('assert')
 const sinon = require('sinon')
-const db = require('./mocks/db')
+const dbMock = require('./mocks/db')
 const ds = require('../src/lib/data_source')
 const { DBError, InvalidFormDataObject, InvalidFormDataFields } = require('../src/lib/error')
+const forms = require('../dbseed/forms.collection')
 const lib = require('../src/lib')
 
 
@@ -13,17 +14,18 @@ describe('Library', () => {
 
   beforeEach(() => {
     sandbox = sinon.sandbox.create()
-    ds.setDB(db)
+    ds.setDB(dbMock)
   })
 
   afterEach(() => {
     sandbox.restore()
-    ds.disconnectDB()
+    ds.setDB(null)
   })
 
   describe('getForms', () => {
 
     it('should return paginated list of forms', (done) => {
+      sandbox.stub(ds, 'findDB', (collectionName, opts, cb) => cb(null, forms))
       lib.getForms({}, (err, result) => {
         assert.ifError(err)
 
@@ -37,21 +39,8 @@ describe('Library', () => {
       })
     })
 
-    it('should support filtering', (done) => {
-      lib.getForms({ lastName: 'Skywalker' }, (err, result) => {
-        assert.ifError(err)
-
-        assert(Array.isArray(result))
-        assert.equal(result.length, 1)
-        assert.equal(result[ 0 ].firstName, 'Luke')
-        assert.equal(result[ 0 ].lastName, 'Skywalker')
-
-        done()
-      })
-    })
-
     it('should return error when DB is not available', (done) => {
-      ds.disconnectDB()
+      ds.setDB(null)
       lib.getForms({}, (err) => {
         assert(err instanceof DBError)
         done()
@@ -63,6 +52,7 @@ describe('Library', () => {
   describe('getFormById', () => {
 
     it('should return form by id', (done) => {
+      sandbox.stub(ds, 'findDB', (collectionName, opts, cb) => cb(null, [forms[ 1 ]]))
       lib.getFormById(2, (err, result) => {
         assert.ifError(err)
 
@@ -74,6 +64,7 @@ describe('Library', () => {
     })
 
     it('should return NULL when form not found by id', (done) => {
+      sandbox.stub(ds, 'findDB', (collectionName, opts, cb) => cb(null, []))
       lib.getFormById(0, (err, result) => {
         assert.ifError(err)
         assert.strictEqual(result, null)
@@ -82,7 +73,7 @@ describe('Library', () => {
     })
 
     it('should return error when DB is not available', (done) => {
-      ds.disconnectDB()
+      ds.setDB(null)
       lib.getFormById(2, (err) => {
         assert(err instanceof DBError)
         done()
@@ -121,9 +112,9 @@ describe('Library', () => {
   describe('saveForm', () => {
 
     it('should successfully save form data and return form entity', (done) => {
+      sandbox.stub(ds, 'saveDB', (collectionName, opts, cb) => cb(null, formMock))
       lib.saveForm(formMock, (err, newForm) => {
         assert.ifError(err)
-        assert(newForm._id)
         assert.equal(newForm.firstName, 'Joe')
         assert.equal(newForm.lastName, 'Smith')
         done()
@@ -131,7 +122,7 @@ describe('Library', () => {
     })
 
     it('should return error when DB is not available', (done) => {
-      ds.disconnectDB()
+      ds.setDB(null)
       lib.saveForm(formMock, (err) => {
         assert(err instanceof DBError)
         done()
