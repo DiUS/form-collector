@@ -1,25 +1,36 @@
 const assert = require('assert')
 const sinon = require('sinon')
-const { dbMock } = require('./mocks')
+const { dbMock, s3Mock } = require('./mocks')
 const ds = require('../src/lib/data_source')
-const { DBError, InvalidFormDataObject, InvalidFormDataFields } = require('../src/lib/error')
+const { DBError, InvalidFormDataObject, InvalidFormDataFields, S3Error } = require('../src/lib/error')
 const forms = require('../dbseed/forms.collection')
 const lib = require('../src/lib')
 
 
 describe('Library', () => {
 
+  const formMock = {
+    firstName: 'Joe', lastName: 'Smith',
+    file: {
+      originalName: 'testFile',
+      mimetype: 'text/plain',
+      buffer: 'testestest'
+    }
+  }
   let sandbox = null
-  const formMock = { firstName: 'Joe', lastName: 'Smith' }
+  let s3Client = null
 
   beforeEach(() => {
     sandbox = sinon.sandbox.create()
+    s3Client = s3Mock()
     ds.setDBClient(dbMock)
+    ds.setS3Client(s3Client)
   })
 
   afterEach(() => {
     sandbox.restore()
     ds.setDBClient(null)
+    ds.setS3Client(null)
   })
 
   describe('getForms', () => {
@@ -46,6 +57,8 @@ describe('Library', () => {
         done()
       })
     })
+
+    it('should handle errors during database read')
   })
 
 
@@ -53,6 +66,7 @@ describe('Library', () => {
 
     it('should return form by id', (done) => {
       sandbox.stub(ds, 'findDB', (collectionName, opts, cb) => cb(null, [forms[ 1 ]]))
+      // TODO: add spy on lib.getForms
       lib.getFormById(2, (err, result) => {
         assert.ifError(err)
 
@@ -65,6 +79,7 @@ describe('Library', () => {
 
     it('should return NULL when form not found by id', (done) => {
       sandbox.stub(ds, 'findDB', (collectionName, opts, cb) => cb(null, []))
+      // TODO: add spy on lib.getForms
       lib.getFormById(0, (err, result) => {
         assert.ifError(err)
         assert.strictEqual(result, null)
@@ -112,26 +127,80 @@ describe('Library', () => {
   describe('saveForm', () => {
 
     it('should successfully upload form to S3, save form data and return form entity', (done) => {
-      sandbox.stub(ds, 'saveDB', (collectionName, opts, cb) => cb(null, formMock))
-      lib.saveForm(formMock, (err, newForm) => {
+      const s3Opts = {
+        fileName: 'testFile',
+        fileData: 'testestest',
+        headers: {
+          'Content-Length': 10,
+          'Content-Type': 'text/plain',
+          'x-amz-acl': 'public-read'
+        }
+      }
+
+      sandbox.stub(ds, 'putS3', (opts, cb) => cb(null, 'localhost'))
+      sandbox.stub(ds, 'saveDB', (collectionName, opts, cb) => cb())
+
+      lib.saveForm(formMock, (err) => {
         assert.ifError(err)
-        assert.equal(newForm.firstName, 'Joe')
-        assert.equal(newForm.lastName, 'Smith')
+
+        assert(ds.putS3.calledOnce)
+        assert.deepEqual(ds.putS3.getCall(0).args[ 0 ], s3Opts)
+
+        assert(ds.saveDB.calledOnce)
+        assert.equal(ds.saveDB.getCall(0).args[ 0 ], 'forms')
+        assert.deepEqual(ds.saveDB.getCall(0).args[ 1 ], {
+          firstName: 'Joe',
+          lastName: 'Smith',
+          url: 'localhost'
+        })
+
         done()
       })
     })
 
     it('should return error when DB is not available', (done) => {
       ds.setDBClient(null)
+      sandbox.stub(ds, 'putS3', (opts, cb) => cb())
       lib.saveForm(formMock, (err) => {
         assert(err instanceof DBError)
+        assert(ds.putS3.calledOnce)
         done()
       })
     })
 
-    it('should return error when file storage S3 is not available')
+    it('should return error when file storage S3 is not available', (done) => {
+      ds.setS3Client(null)
+      sandbox.spy(ds, 'saveDB')
+      lib.saveForm(formMock, (err) => {
+        assert(err instanceof S3Error)
+        assert(!ds.saveDB.called)
+        done()
+      })
+    })
 
-    it('should handle errors during file upload to S3')
-    it('should handle errors during database write')
+    it('should handle errors during file upload to S3', (done) => {
+      sandbox.spy(ds, 'saveDB')
+
+      lib.saveForm(formMock, (err) => {
+        assert(err instanceof S3Error)
+        assert(!ds.saveDB.called)
+        done()
+      })
+      s3Client.request.emit('response', { statusCode: 400, statusMessage: 'test error' })
+    })
+
+    it('should handle errors during database write', (done) => {
+      sandbox.spy(ds, 'putS3')
+      sandbox.stub(ds, 'saveDB', (collectionName, data, cb) => cb(new DBError('Test')))
+
+      lib.saveForm(formMock, (err) => {
+        assert(err instanceof DBError)
+        // TODO: what should we do if we cannot write to DB?
+        // should we try to delete file from S3?
+        assert(ds.putS3.called)
+        done()
+      })
+      s3Client.request.emit('response', { statusCode: 200 })
+    })
   })
 })

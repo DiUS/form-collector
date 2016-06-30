@@ -102,6 +102,8 @@ describe('Middleware', () => {
       sandbox.stub(lib, 'saveForm', (fromData, cb) => cb(null, formMock))
       const send = (newForm) => {
         assert(lib.saveForm.calledOnce)
+        // TODO: add file option check
+        // assert.deepEqual(lib.saveForm.getCall(0).args[ 0 ], saveFormOpts)
         assert.deepEqual(newForm, formMock)
         done()
       }
@@ -118,11 +120,7 @@ describe('Middleware', () => {
       })
     })
 
-    it('should handle error when DB is not available')
-    it('should handle error when S3 is not available')
-    it('should handle errors during file upload to S3')
-
-    it('should handle errors during database write', (done) => {
+    it('should handle server side errors', (done) => {
       sandbox.stub(lib, 'validateForm', () => true)
       sandbox.stub(lib, 'saveForm', (fromData, cb) => cb(formSaveError))
       middleware.createForm(requestMock(), responseMock(), (err) => {

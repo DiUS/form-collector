@@ -26,6 +26,27 @@ class S3Error extends Error {
 }
 
 
+class S3NotAvailable extends S3Error {
+  constructor() {
+    super(new Error('S3 is not available now'))
+  }
+}
+
+
+class S3WriteError extends S3Error {
+  constructor(message) {
+    super(new Error(`S3 write error: ${message}`))
+  }
+}
+
+
+class S3RequestTimeout extends S3Error {
+  constructor() {
+    super(new Error('Request has been aborted by timeout'))
+  }
+}
+
+
 // Form validation errors
 class InvalidFormError extends Error {
   constructor(err) {
@@ -61,7 +82,7 @@ class FormNotFound extends NotFoundError {
 
 module.exports = {
   DBError, DBNotAvailable, DBCollectionNotFound,
-  S3Error,
+  S3Error, S3NotAvailable, S3WriteError, S3RequestTimeout,
   InvalidFormError, InvalidFormDataObject, InvalidFormDataFields,
   NotFoundError, FormNotFound
 }

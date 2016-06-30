@@ -5,7 +5,7 @@ const { DBCollection, dbMock, s3Mock } = require('./mocks')
 const ds = require('../src/lib/data_source')
 const {
   DBNotAvailable, DBCollectionNotFound, DBError,
-  S3Error
+  S3NotAvailable, S3WriteError, S3RequestTimeout, S3Error
 } = require('../src/lib/error')
 
 
@@ -181,14 +181,48 @@ describe('Data source', () => {
 
     describe('Bucket objects manipulation methods', () => {
 
-      beforeEach(() => ds.setS3Client(s3Mock))
+      let s3Client = null
+      beforeEach(() => {
+        s3Client = s3Mock()
+        ds.setS3Client(s3Client)
+      })
       afterEach(() => ds.setS3Client(null))
 
       describe('putS3', () => {
 
-        it('should handle error when S3 connection is not established')
-        it('should handle errors during put to S3')
-        it('should put data to S3 and return URL to resource')
+        it('should handle error when S3 connection is not established', (done) => {
+          ds.setS3Client(null)
+          ds.putS3({}, (err) => {
+            assert(err instanceof S3NotAvailable)
+            done()
+          })
+        })
+
+        it('should handle `put` to S3 response errors', (done) => {
+          ds.putS3({}, (err) => {
+            assert(err instanceof S3WriteError)
+            assert.equal(err.message, `Error: S3 write error: status code '400', message 'test error'`)
+            done()
+          })
+          s3Client.request.emit('response', { statusCode: 400, statusMessage: 'test error' })
+        })
+
+        it('should handle request timeout errors', (done) => {
+          ds.putS3({}, (err) => {
+            assert(err instanceof S3RequestTimeout)
+            done()
+          })
+          s3Client.request.emit('abort')
+        })
+
+        it('should put data to S3 and return URL to resource', (done) => {
+          ds.putS3({}, (err, url) => {
+            assert.ifError(err)
+            assert.equal(url, 'localhost')
+            done()
+          })
+          s3Client.request.emit('response', { statusCode: 200 })
+        })
       })
 
 
