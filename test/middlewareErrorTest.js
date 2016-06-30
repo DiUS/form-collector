@@ -1,5 +1,5 @@
 const assert = require('assert')
-const { InvalidFormError, NotFoundError } = require('../src/lib/error')
+const { InvalidFormError, NotFoundError, DBError, S3Error } = require('../src/lib/error')
 const middleware = require('../src/middleware/error')
 
 
@@ -14,6 +14,14 @@ describe('Middleware Error', () => {
 
     it('should return status 404 when NotFoundError', () => {
       assert.equal(404, middleware._getStatus(new NotFoundError()))
+    })
+
+    it('should return status 500 for DBErrors', () => {
+      assert.equal(500, middleware._getStatus(new DBError()))
+    })
+
+    it('should return status 500 for S3Errors', () => {
+      assert.equal(500, middleware._getStatus(new S3Error()))
     })
 
     it('should return status 500 in general case', () => {
