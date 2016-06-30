@@ -58,7 +58,13 @@ describe('Library', () => {
       })
     })
 
-    it('should handle errors during database read')
+    it('should handle errors during database read', (done) => {
+      sandbox.stub(ds, 'findDB', (collectionName, opts, cb) => cb(new DBError('Test')))
+      lib.getForms({}, (err) => {
+        assert(err instanceof DBError)
+        done()
+      })
+    })
   })
 
 
@@ -66,10 +72,12 @@ describe('Library', () => {
 
     it('should return form by id', (done) => {
       sandbox.stub(ds, 'findDB', (collectionName, opts, cb) => cb(null, [forms[ 1 ]]))
-      // TODO: add spy on lib.getForms
+      sandbox.spy(lib, 'getForms')
+
       lib.getFormById(2, (err, result) => {
         assert.ifError(err)
 
+        assert(lib.getForms.calledOnce)
         assert.equal(result.firstName, 'Jack')
         assert.equal(result.lastName, 'Sparrow')
 
@@ -79,10 +87,14 @@ describe('Library', () => {
 
     it('should return NULL when form not found by id', (done) => {
       sandbox.stub(ds, 'findDB', (collectionName, opts, cb) => cb(null, []))
-      // TODO: add spy on lib.getForms
+      sandbox.spy(lib, 'getForms')
+
       lib.getFormById(0, (err, result) => {
         assert.ifError(err)
+
+        assert(lib.getForms.calledOnce)
         assert.strictEqual(result, null)
+
         done()
       })
     })

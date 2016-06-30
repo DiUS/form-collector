@@ -5,11 +5,11 @@ const { InvalidFormDataObject, InvalidFormDataFields } = require('./error')
 const formsCollectionName = 'forms'
 
 
-const getForms = (opts, cb) => ds.findDB(formsCollectionName, opts, cb)
+exports.getForms = (opts, cb) => ds.findDB(formsCollectionName, opts, cb)
 
 
-const getFormById = (id, cb) => {
-  getForms({ _id: id }, (err, formsList) => {
+exports.getFormById = (id, cb) => {
+  exports.getForms({ _id: id }, (err, formsList) => {
     if (err) return cb(err)
     if (!formsList.length) return cb(null, null)
     return cb(null, formsList[ 0 ])
@@ -17,7 +17,7 @@ const getFormById = (id, cb) => {
 }
 
 
-const validateForm = (formData) => {
+exports.validateForm = (formData) => {
   if (!_.isObject(formData)) return new InvalidFormDataObject()
   const invalidFields = []
 
@@ -32,7 +32,7 @@ const validateForm = (formData) => {
 }
 
 
-const saveForm = (formData, cb) => {
+exports.saveForm = (formData, cb) => {
 
   const putS3 = (formData, cb) => {
     const { originalName, buffer, mimetype } = formData.file
@@ -48,6 +48,3 @@ const saveForm = (formData, cb) => {
     saveDB
   ], cb)
 }
-
-
-module.exports = { getForms, getFormById, validateForm, saveForm }
