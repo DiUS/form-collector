@@ -10,7 +10,7 @@ const knox = require('knox') // S3 client library
 const url = require('url')
 const {
   DBNotAvailable, DBCollectionNotFound, DBError,
-  S3Error
+  S3NotAvailable, S3WriteError, S3RequestTimeout, S3Error
 } = require('./error')
 
 
@@ -23,7 +23,7 @@ let bufferMaxEntries = 0
 
 // s3 connection properties
 let _s3 = null // s3 client reference
-
+let s3RequestTimeout = 1000
 
 const getDBConnectionString = (opts) => {
   const _opts = {
@@ -44,19 +44,14 @@ exports.setDBClient = (db) => {
 
   // driver's events
   db.on('close', () => {
-    if (_dbReconnectTimeout) clearTimeout(_dbReconnectTimeout)
+    clearTimeout(_dbReconnectTimeout)
     _dbReconnectTimeout = setTimeout(() => {
       _db = db = null
       // TODO: we should return message about DB failure and stop the whole application here
     }, reconnectTries * reconnectInterval)
   })
 
-  db.on('reconnect', () => {
-    if (_dbReconnectTimeout) {
-      clearTimeout(_dbReconnectTimeout)
-      _dbReconnectTimeout = null
-    }
-  })
+  db.on('reconnect', () => clearTimeout(_dbReconnectTimeout))
 }
 
 
@@ -130,6 +125,8 @@ exports.setS3Client = (s3) => _s3 = s3
 
 
 exports.createS3Client = (opts, cb) => {
+  s3RequestTimeout = opts._s3requestTimeout || s3RequestTimeout
+
   try {
     exports.setS3Client(knox.createClient(opts))
   } catch(err) {
@@ -140,7 +137,26 @@ exports.createS3Client = (opts, cb) => {
 
 
 exports.putS3 = (opts, cb) => {
-  cb(new Error('Not implemented yet'))
+  const s3 = exports.getS3Client()
+  if (!s3) return cb(new S3NotAvailable())
+
+  const req = s3.put(opts.fileName, opts.headers)
+  const reqAbortTimeout = setTimeout(() => { req.abort() }, s3RequestTimeout)
+
+  req.on('response', (res) => {
+    clearTimeout(reqAbortTimeout)
+    if (res.statusCode !== 200) {
+      const message = `status code '${res.statusCode}', message '${res.statusMessage}'`
+      return cb(new S3WriteError(message))
+    }
+
+    cb(null, req.url)
+  })
+  req.on('abort', () => {
+    clearTimeout(reqAbortTimeout)
+    cb(new S3RequestTimeout())
+  })
+  req.end(opts.fileData)
 }
 
 

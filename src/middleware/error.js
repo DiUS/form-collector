@@ -18,7 +18,7 @@ module.exports = (err, req, res, next) => {
     /* eslint-enable no-console */
   }
 
-  res.status(getStatus(err)).send({ error: err.message.replace(/error:/gi, '').trim() })
+  res.status(getStatus(err)).send({ error: err.message.replace(/Error:/g, '').trim() })
 }
 
 

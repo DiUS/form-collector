@@ -1,5 +1,6 @@
-const ds = require('./data_source')
+const async = require('async')
 const _ = require('lodash')
+const ds = require('./data_source')
 const { InvalidFormDataObject, InvalidFormDataFields } = require('./error')
 const formsCollectionName = 'forms'
 
@@ -31,7 +32,31 @@ const validateForm = (formData) => {
 }
 
 
-const saveForm = (formData, cb) => ds.saveDB(formsCollectionName, formData, cb)
+const saveForm = (formData, cb) => {
+
+  const putS3 = (formData, cb) => {
+    // TODO: create getS3PutOptions method in data_source
+    const file = formData.file
+    const opts = {
+      fileName: file.originalName,
+      fileData: file.buffer,
+      headers: {
+        'Content-Length': Buffer.byteLength(file.buffer),
+        'Content-Type': file.mimetype,
+        'x-amz-acl': 'public-read'
+      }
+    }
+    ds.putS3(opts, (err, url) => (err) ? cb(err) : cb(null, Object.assign({}, formData, { url })))
+  }
+  const saveDB = (formData, cb) => {
+    ds.saveDB(formsCollectionName, _.omit(formData, 'file'), cb)
+  }
+
+  async.waterfall([
+    async.apply(putS3, formData),
+    saveDB
+  ], cb)
+}
 
 
 module.exports = { getForms, getFormById, validateForm, saveForm }
