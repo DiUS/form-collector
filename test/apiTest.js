@@ -2,7 +2,7 @@ const assert = require('assert')
 const req = require('supertest')
 const sinon = require('sinon')
 const app = require('../src/server')
-const dbMock = require('./mocks/db')
+const { dbMock } = require('./mocks')
 const ds = require('../src/lib/data_source')
 const forms = require('../dbseed/forms.collection')
 
@@ -14,7 +14,7 @@ describe('API', () => {
 
   beforeEach(() => {
     sandbox = sinon.sandbox.create()
-    ds.setDB(dbMock)
+    ds.setDBClient(dbMock)
   })
 
   afterEach(() => sandbox.restore())
@@ -34,7 +34,7 @@ describe('API', () => {
     })
 
     it('should response `500` and return server side error information', (done) => {
-      ds.setDB(null)
+      ds.setDBClient(null)
       req(app)
         .get('/')
         .expect(500, (err, res) => {
@@ -73,7 +73,7 @@ describe('API', () => {
     })
 
     it('should response `500` and return server side error information', (done) => {
-      ds.setDB(null)
+      ds.setDBClient(null)
       req(app)
         .get('/1')
         .expect(500, (err, res) => {
@@ -110,8 +110,8 @@ describe('API', () => {
         })
     })
 
-    it('should response `500` and return server side error information', (done) => {
-      ds.setDB(null)
+    it('should response `500` when DB is not available', (done) => {
+      ds.setDBClient(null)
       req(app)
         .post('/')
         .send(formMock)
@@ -121,5 +121,9 @@ describe('API', () => {
           done()
         })
     })
+
+    it('should response `500` when S3 is not available')
+    it('should response `500` on errors during file upload to S3')
+    it('should response `500` errors during database write')
   })
 })

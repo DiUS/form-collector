@@ -118,7 +118,11 @@ describe('Middleware', () => {
       })
     })
 
-    it('should handle form saving errors', (done) => {
+    it('should handle error when DB is not available')
+    it('should handle error when S3 is not available')
+    it('should handle errors during file upload to S3')
+
+    it('should handle errors during database write', (done) => {
       sandbox.stub(lib, 'validateForm', () => true)
       sandbox.stub(lib, 'saveForm', (fromData, cb) => cb(formSaveError))
       middleware.createForm(requestMock(), responseMock(), (err) => {
