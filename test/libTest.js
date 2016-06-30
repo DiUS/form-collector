@@ -1,6 +1,6 @@
 const assert = require('assert')
 const sinon = require('sinon')
-const dbMock = require('./mocks/db')
+const { dbMock } = require('./mocks')
 const ds = require('../src/lib/data_source')
 const { DBError, InvalidFormDataObject, InvalidFormDataFields } = require('../src/lib/error')
 const forms = require('../dbseed/forms.collection')
@@ -14,12 +14,12 @@ describe('Library', () => {
 
   beforeEach(() => {
     sandbox = sinon.sandbox.create()
-    ds.setDB(dbMock)
+    ds.setDBClient(dbMock)
   })
 
   afterEach(() => {
     sandbox.restore()
-    ds.setDB(null)
+    ds.setDBClient(null)
   })
 
   describe('getForms', () => {
@@ -40,7 +40,7 @@ describe('Library', () => {
     })
 
     it('should return error when DB is not available', (done) => {
-      ds.setDB(null)
+      ds.setDBClient(null)
       lib.getForms({}, (err) => {
         assert(err instanceof DBError)
         done()
@@ -73,7 +73,7 @@ describe('Library', () => {
     })
 
     it('should return error when DB is not available', (done) => {
-      ds.setDB(null)
+      ds.setDBClient(null)
       lib.getFormById(2, (err) => {
         assert(err instanceof DBError)
         done()
@@ -111,7 +111,7 @@ describe('Library', () => {
 
   describe('saveForm', () => {
 
-    it('should successfully save form data and return form entity', (done) => {
+    it('should successfully upload form to S3, save form data and return form entity', (done) => {
       sandbox.stub(ds, 'saveDB', (collectionName, opts, cb) => cb(null, formMock))
       lib.saveForm(formMock, (err, newForm) => {
         assert.ifError(err)
@@ -122,13 +122,16 @@ describe('Library', () => {
     })
 
     it('should return error when DB is not available', (done) => {
-      ds.setDB(null)
+      ds.setDBClient(null)
       lib.saveForm(formMock, (err) => {
         assert(err instanceof DBError)
         done()
       })
     })
 
-    it('should return error when file storage (S3) is not available')
+    it('should return error when file storage S3 is not available')
+
+    it('should handle errors during file upload to S3')
+    it('should handle errors during database write')
   })
 })

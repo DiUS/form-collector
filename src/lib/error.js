@@ -18,6 +18,14 @@ class DBCollectionNotFound extends DBError {
 }
 
 
+// S3 errors
+class S3Error extends Error {
+  constructor(err) {
+    super(err)
+  }
+}
+
+
 // Form validation errors
 class InvalidFormError extends Error {
   constructor(err) {
@@ -53,6 +61,7 @@ class FormNotFound extends NotFoundError {
 
 module.exports = {
   DBError, DBNotAvailable, DBCollectionNotFound,
+  S3Error,
   InvalidFormError, InvalidFormDataObject, InvalidFormDataFields,
   NotFoundError, FormNotFound
 }
