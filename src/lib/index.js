@@ -35,17 +35,8 @@ const validateForm = (formData) => {
 const saveForm = (formData, cb) => {
 
   const putS3 = (formData, cb) => {
-    // TODO: create getS3PutOptions method in data_source
-    const file = formData.file
-    const opts = {
-      fileName: file.originalName,
-      fileData: file.buffer,
-      headers: {
-        'Content-Length': Buffer.byteLength(file.buffer),
-        'Content-Type': file.mimetype,
-        'x-amz-acl': 'public-read'
-      }
-    }
+    const { originalName, buffer, mimetype } = formData.file
+    const opts = ds.getS3PutOptions(originalName, buffer, mimetype)
     ds.putS3(opts, (err, url) => (err) ? cb(err) : cb(null, Object.assign({}, formData, { url })))
   }
   const saveDB = (formData, cb) => {

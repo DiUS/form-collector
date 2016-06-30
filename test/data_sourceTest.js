@@ -179,6 +179,23 @@ describe('Data source', () => {
     })
 
 
+    describe('getS3PutOptions', () => {
+
+      it('should build options for s3 `put` command', () => {
+        const opts = ds.getS3PutOptions('testFile', 'testestest', 'text/plain')
+        assert.deepEqual(opts, {
+          fileName: 'testFile',
+          fileData: 'testestest',
+          headers: {
+            'Content-Length': 10,
+            'Content-Type': 'text/plain',
+            'x-amz-acl': 'public-read'
+          }
+        })
+      })
+    })
+
+
     describe('Bucket objects manipulation methods', () => {
 
       let s3Client = null

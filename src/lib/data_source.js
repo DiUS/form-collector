@@ -136,6 +136,17 @@ exports.createS3Client = (opts, cb) => {
 }
 
 
+exports.getS3PutOptions = (fileName, fileData, mimetype) => ({
+  fileName,
+  fileData,
+  headers: {
+    'Content-Length': Buffer.byteLength(fileData),
+    'Content-Type': mimetype,
+    'x-amz-acl': 'public-read'
+  }
+})
+
+
 exports.putS3 = (opts, cb) => {
   const s3 = exports.getS3Client()
   if (!s3) return cb(new S3NotAvailable())
