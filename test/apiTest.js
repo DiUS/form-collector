@@ -1,22 +1,19 @@
 const assert = require('assert')
 const req = require('supertest')
 const sinon = require('sinon')
+const path = require('path')
 const app = require('../src/server')
 const { dbMock, s3Mock } = require('./mocks')
 const ds = require('../src/lib/data_source')
-const forms = require('../dbseed/forms.collection')
+const forms = require('../docker/dbseed/forms.collection')
 
 
 describe('API', () => {
 
-  const formMock = {
-    firstName: 'John', lastName: 'Smith',
-    file: {
-      originalName: 'testFile',
-      mimetype: 'text/plain',
-      buffer: 'testestest'
-    }
-  }
+  const firstNameMock = 'John'
+  const lastNameMock = 'Smith'
+  const uploadFilePath = path.join(__dirname, '../docker/s3seed/files/luke-skywalker-resume.pdf')
+
   let sandbox = null
   let s3Client = null
 
@@ -106,7 +103,9 @@ describe('API', () => {
       sandbox.stub(ds, 'saveDB', (collectionName, opts, cb) => cb(null, opts))
       req(app)
         .post('/')
-        .send(formMock)
+        .field('firstName', firstNameMock)
+        .field('lastName', lastNameMock)
+        .attach('attachment', uploadFilePath)
         .expect(201, (err, res) => {
           assert.ifError(err)
           assert(ds.putS3.calledOnce)
@@ -124,7 +123,6 @@ describe('API', () => {
       sandbox.spy(ds, 'saveDB')
       req(app)
         .post('/')
-        .send({})
         .expect(400, (err, res) => {
           assert.ifError(err)
           assert(!ds.putS3.called)
@@ -139,7 +137,9 @@ describe('API', () => {
       ds.setDBClient(null)
       req(app)
         .post('/')
-        .send(formMock)
+        .field('firstName', firstNameMock)
+        .field('lastName', lastNameMock)
+        .attach('attachment', uploadFilePath)
         .expect(500, (err, res) => {
           assert.ifError(err)
           assert(ds.putS3.calledOnce)
@@ -157,7 +157,9 @@ describe('API', () => {
       sandbox.spy(ds, 'saveDB')
       req(app)
         .post('/')
-        .send(formMock)
+        .field('firstName', firstNameMock)
+        .field('lastName', lastNameMock)
+        .attach('attachment', uploadFilePath)
         .expect(500, (err, res) => {
           assert.ifError(err)
           assert(!ds.saveDB.called)
@@ -170,7 +172,9 @@ describe('API', () => {
       sandbox.spy(ds, 'saveDB')
       req(app)
         .post('/')
-        .send(formMock)
+        .field('firstName', firstNameMock)
+        .field('lastName', lastNameMock)
+        .attach('attachment', uploadFilePath)
         .expect(500, (err, res) => {
           assert.ifError(err)
           assert(!ds.saveDB.called)
@@ -188,7 +192,9 @@ describe('API', () => {
       sandbox.stub(ds, 'saveDB', (collectionName, opts, cb) => cb(new Error('test error')))
       req(app)
         .post('/')
-        .send(formMock)
+        .field('firstName', firstNameMock)
+        .field('lastName', lastNameMock)
+        .attach('attachment', uploadFilePath)
         .expect(500, (err, res) => {
           assert.ifError(err)
           assert(ds.putS3.calledOnce)

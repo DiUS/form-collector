@@ -7,14 +7,14 @@ const lib = require('../src/lib')
 const middleware = require('../src/middleware')
 const requestMock = require('./mocks/request')
 const responseMock = require('./mocks/response')
-const formsCollection = require('../dbseed/forms.collection')
+const forms = require('../docker/dbseed/forms.collection')
 
 
 describe('Middleware', () => {
 
   const formsFetchError = new DBError('Forms Fetch Error')
   const formSaveError = new DBError('Form cannot be saved')
-  const formMock = Object.assign({}, formsCollection[0])
+  const formMock = Object.assign({}, forms[0])
   let sandbox = null
 
   beforeEach(() => sandbox = sinon.sandbox.create())
@@ -23,7 +23,7 @@ describe('Middleware', () => {
   describe('getForms', () => {
 
     it('should return paginated list of forms', (done) => {
-      sandbox.stub(lib, 'getForms', (opts, cb) => cb(null, formsCollection))
+      sandbox.stub(lib, 'getForms', (opts, cb) => cb(null, forms))
       const req = requestMock()
       const res = {
         send: (forms) => {
