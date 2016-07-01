@@ -1,18 +1,26 @@
-version: '2'
-services:
-  db:
-    image: mongo
-    ports:
-      - "27017:27017"
+db:
+  image: mongo
+  ports:
+    - "27017:27017"
 
-  dbseed:
-    build: ./dbseed
-    links:
-      - db
+dbseed:
+  build: ./docker/dbseed
+  links:
+    - db
 
-  app:
-    build: .
-    ports:
-      - "3000:3000"
-    links:
-      - db
+s3:
+  image: lphoward/fake-s3
+  ports:
+    - "4569:4569"
+
+s3seed:
+  build: ./docker/s3seed
+  links:
+    - s3
+
+app:
+  build: .
+  ports:
+    - "3000:3000"
+  links:
+    - db
