@@ -30,7 +30,6 @@ const sanitizeForm = (req, res, next) => {
 
 
 const createForm = (req, res, next) => {
-  // const formData = Object.assign({}, req.body, { file: req.file })
   const formData = req.body
   const isValidFormData = lib.validateForm(formData)
 
