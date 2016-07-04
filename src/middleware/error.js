@@ -6,6 +6,7 @@ const NODE_ENV = process.env.NODE_ENV
 const getStatus = (err) => {
   if (err instanceof InvalidFormError) return 400
   if (err instanceof NotFoundError) return 404
+  if (err.code === 'LIMIT_FILE_SIZE') return 400
   return 500
 }
 

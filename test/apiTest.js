@@ -12,7 +12,8 @@ describe('API', () => {
 
   const firstNameMock = 'John'
   const lastNameMock = 'Smith'
-  const uploadFilePath = path.join(__dirname, '../docker/s3seed/files/luke-skywalker-resume.pdf')
+  const uploadFilePath = path.join(__dirname, '../docker/s3seed/files/jack-sparrow-resume.docx')
+  const tooBigFile = path.join(__dirname, '../docker/s3seed/files/luke-skywalker-resume.pdf')
 
   let sandbox = null
   let s3Client = null
@@ -204,7 +205,7 @@ describe('API', () => {
       }, 100)
     })
 
-    it('should response `500` errors during database write', (done) => {
+    it('should response `500` on errors during database write', (done) => {
       sandbox.spy(ds, 'putS3')
       sandbox.stub(ds, 'saveDB', (collectionName, opts, cb) => cb(new Error('test error')))
       req(app)
@@ -222,6 +223,24 @@ describe('API', () => {
         setTimeout(() => {
           s3Client.request.emit('response', { statusCode: 200 })
         }, 100)
+    })
+
+    it('should response `400` when attachment file size is greater than limit', (done) => {
+      sandbox.spy(ds, 'putS3')
+      sandbox.spy(ds, 'saveDB')
+
+      req(app)
+        .post('/')
+        .field('firstName', firstNameMock)
+        .field('lastName', lastNameMock)
+        .attach('attachment', tooBigFile)
+        .expect(400, (err, res) => {
+          assert.ifError(err)
+          assert.deepEqual(res.body, { error: 'File too large' })
+          assert(!ds.putS3.called)
+          assert(!ds.saveDB.called)
+          done()
+        })
     })
   })
 })

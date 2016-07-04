@@ -12,6 +12,12 @@ describe('Middleware Error', () => {
       assert.equal(400, middleware._getStatus(new InvalidFormError()))
     })
 
+    it('should return status 400 when attachment size is too large', () => {
+      const err = new Error('File too large')
+      err.code = 'LIMIT_FILE_SIZE'
+      assert.equal(400, middleware._getStatus(err))
+    })
+
     it('should return status 404 when NotFoundError', () => {
       assert.equal(404, middleware._getStatus(new NotFoundError()))
     })
