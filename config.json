@@ -14,5 +14,14 @@
       "reconnectInterval": 1000,
       "bufferMaxEntries": 0
     }
+  },
+  "s3": {
+    "key": "key",
+    "secret": "secret",
+    "bucket": "bucket",
+    "endpoint": "localhost",
+    "style": "path",
+    "port": 4569,
+    "_s3requestTimeout": 5000
   }
 }

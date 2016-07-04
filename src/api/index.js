@@ -1,12 +1,12 @@
 const express = require('express')
-const middleware = require('../middleware')
+const { getForms, getFormById, formAttachment, sanitizeForm, createForm } = require('../middleware')
 
 const router = express.Router()
 
 
-router.get('/', middleware.getForms)
-router.get('/:id', middleware.getFormById)
-router.post('/', middleware.sanitizeForm, middleware.createForm)
+router.get('/', getForms)
+router.get('/:id', getFormById)
+router.post('/', formAttachment.single('attachment'), sanitizeForm, createForm)
 
 
 module.exports = router

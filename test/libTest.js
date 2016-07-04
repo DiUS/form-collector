@@ -3,7 +3,7 @@ const sinon = require('sinon')
 const { dbMock, s3Mock } = require('./mocks')
 const ds = require('../src/lib/data_source')
 const { DBError, InvalidFormDataObject, InvalidFormDataFields, S3Error } = require('../src/lib/error')
-const forms = require('../dbseed/forms.collection')
+const forms = require('../docker/dbseed/forms.collection')
 const lib = require('../src/lib')
 
 
@@ -12,7 +12,7 @@ describe('Library', () => {
   const formMock = {
     firstName: 'Joe', lastName: 'Smith',
     file: {
-      originalName: 'testFile',
+      originalname: 'testFile',
       mimetype: 'text/plain',
       buffer: 'testestest'
     }
@@ -140,7 +140,7 @@ describe('Library', () => {
 
     it('should successfully upload form to S3, save form data and return form entity', (done) => {
       const s3Opts = {
-        fileName: 'testFile',
+        fileName: 'Joe-Smith-testFile',
         fileData: 'testestest',
         headers: {
           'Content-Length': 10,

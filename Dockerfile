@@ -13,4 +13,4 @@ COPY . /usr/src/app
 
 
 EXPOSE 3000
-CMD npm start -- --db:url:host db
+CMD npm start -- --db:url:host db --s3:endpoint ${S3_PORT_4569_TCP_ADDR} --s3:port ${S3_PORT_4569_TCP_PORT} --s3:bucket forms

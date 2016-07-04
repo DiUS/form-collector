@@ -35,8 +35,9 @@ exports.validateForm = (formData) => {
 exports.saveForm = (formData, cb) => {
 
   const putS3 = (formData, cb) => {
-    const { originalName, buffer, mimetype } = formData.file
-    const opts = ds.getS3PutOptions(originalName, buffer, mimetype)
+    const { originalname, buffer, mimetype } = formData.file
+    const fullName = `${formData.firstName}-${formData.lastName}-${originalname}`
+    const opts = ds.getS3PutOptions(fullName, buffer, mimetype)
     ds.putS3(opts, (err, url) => (err) ? cb(err) : cb(null, Object.assign({}, formData, { url })))
   }
   const saveDB = (formData, cb) => {

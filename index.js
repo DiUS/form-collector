@@ -32,9 +32,21 @@ const connectDB = (cb) => {
 }
 
 
+const createS3Client = (cb) => {
+  const opts = nconf.get('s3')
+  ds.createS3Client(opts, (err) => {
+    if (err) return cb(err)
+    /* eslint-disable no-console */
+    console.log(`S3 client created with options: ${JSON.stringify(opts)}`)
+    /* eslint-enable no-console */
+  })
+}
+
+
 async.parallel({
   startApp,
-  connectDB
+  connectDB,
+  createS3Client
 }, (err) => {
   if (err) {
     /* eslint-disable no-console */
