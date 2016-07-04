@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node index.js",
     "lint": "eslint .",
-    "test": "mocha ./test/**/*Test.js"
+    "test": "NODE_ENV=test mocha ./test/**/*Test.js"
   },
   "author": "Anton Klimenko <aklimenko@dius.com.au>",
   "license": "MIT",
