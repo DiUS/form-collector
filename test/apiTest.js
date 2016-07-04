@@ -98,7 +98,7 @@ describe('API', () => {
 
   describe('POST /', () => {
 
-    it('should response `201` and return created form data', (done) => {
+    it('should response `201` and return created form data (with attachment)', (done) => {
       sandbox.spy(ds, 'putS3')
       sandbox.stub(ds, 'saveDB', (collectionName, opts, cb) => cb(null, opts))
       req(app)
@@ -109,13 +109,30 @@ describe('API', () => {
         .expect(201, (err, res) => {
           assert.ifError(err)
           assert(ds.putS3.calledOnce)
-          assert.deepEqual(res.body, { firstName: 'John', lastName: 'Smith', url: 'localhost' })
+          assert(ds.saveDB.calledOnce)
+          assert.deepEqual(res.body, { firstName: 'John', lastName: 'Smith', attachment: 'localhost' })
           done()
         })
 
       setTimeout(() => {
         s3Client.request.emit('response', { statusCode: 200 })
       }, 100)
+    })
+
+    it('should response `201` and return created form data (without attachment)', (done) => {
+      sandbox.spy(ds, 'putS3')
+      sandbox.stub(ds, 'saveDB', (collectionName, opts, cb) => cb(null, opts))
+      req(app)
+        .post('/')
+        .field('firstName', firstNameMock)
+        .field('lastName', lastNameMock)
+        .expect(201, (err, res) => {
+          assert.ifError(err)
+          assert(!ds.putS3.called)
+          assert(ds.saveDB.calledOnce)
+          assert.deepEqual(res.body, { firstName: 'John', lastName: 'Smith' })
+          done()
+        })
     })
 
     it('should response `400` and return client error (e.g. form valiedation error)', (done) => {

@@ -102,8 +102,6 @@ describe('Middleware', () => {
       sandbox.stub(lib, 'saveForm', (fromData, cb) => cb(null, formMock))
       const send = (newForm) => {
         assert(lib.saveForm.calledOnce)
-        // TODO: add file option check
-        // assert.deepEqual(lib.saveForm.getCall(0).args[ 0 ], saveFormOpts)
         assert.deepEqual(newForm, formMock)
         done()
       }

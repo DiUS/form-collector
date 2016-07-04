@@ -4,20 +4,20 @@
     "source": "contactUs",
     "firstName": "John",
     "lastName": "Doe",
-    "url": "forms/john-doe-resume.doc"
+    "attachment": "forms/john-doe-resume.doc"
   },
   {
     "_id": "2",
     "source": "contactUs",
     "firstName": "Jack",
     "lastName": "Sparrow",
-    "url": "forms/jack-sparrow-resume.docx"
+    "attachment": "forms/jack-sparrow-resume.docx"
   },
   {
     "_id": "3",
     "source": "contactUs",
     "firstName": "Luke",
     "lastName": "Skywalker",
-    "url": "forms/luke-skywalker-resume.docx"
+    "attachment": "forms/luke-skywalker-resume.docx"
   }
 ]
