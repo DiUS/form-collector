@@ -1,4 +1,3 @@
-const async = require('async')
 const _ = require('lodash')
 const ds = require('./data_source')
 const { InvalidFormDataObject, InvalidFormDataFields } = require('./error')
@@ -33,19 +32,18 @@ exports.validateForm = (formData) => {
 
 
 exports.saveForm = (formData, cb) => {
+  ds.saveDB(formsCollectionName, formData, cb)
+}
 
-  const putS3 = (formData, cb) => {
-    const { originalname, buffer, mimetype } = formData.file
-    const fullName = `${formData.firstName}-${formData.lastName}-${originalname}`
-    const opts = ds.getS3PutOptions(fullName, buffer, mimetype)
-    ds.putS3(opts, (err, url) => (err) ? cb(err) : cb(null, Object.assign({}, formData, { url })))
-  }
-  const saveDB = (formData, cb) => {
-    ds.saveDB(formsCollectionName, _.omit(formData, 'file'), cb)
-  }
 
-  async.waterfall([
-    async.apply(putS3, formData),
-    saveDB
-  ], cb)
+exports.generateS3ObjectName = (body, attachment) => {
+  return `${body.firstName}-${body.lastName}-${attachment.originalname}`
+}
+
+
+exports.putS3 = (body, attachment, cb) => {
+  const { buffer, mimetype } = attachment
+  const fullName = exports.generateS3ObjectName(body, attachment)
+  const opts = ds.getS3PutOptions(fullName, buffer, mimetype)
+  ds.putS3(opts, cb)
 }

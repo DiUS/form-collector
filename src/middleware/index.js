@@ -30,7 +30,8 @@ const sanitizeForm = (req, res, next) => {
 
 
 const createForm = (req, res, next) => {
-  const formData = Object.assign({}, req.body, { file: req.file })
+  // const formData = Object.assign({}, req.body, { file: req.file })
+  const formData = req.body
   const isValidFormData = lib.validateForm(formData)
 
   if (isValidFormData !== true) return next(isValidFormData)
@@ -45,5 +46,6 @@ const createForm = (req, res, next) => {
 module.exports = {
   getForms, getFormById,
   sanitizeForm, createForm,
-  formAttachment: require('./form_attachment')
+  formAttachment: require('./form_attachment'),
+  s3: require('./s3')
 }
