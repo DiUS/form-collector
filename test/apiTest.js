@@ -136,7 +136,7 @@ describe('API', () => {
         })
     })
 
-    it('should response `400` and return client error (e.g. form valiedation error)', (done) => {
+    it('should response `400` and return client error (e.g. form validation error)', (done) => {
       sandbox.spy(ds, 'putS3')
       sandbox.spy(ds, 'saveDB')
       req(app)
@@ -150,24 +150,22 @@ describe('API', () => {
         })
     })
 
-    it('should response `500` when DB is not available', (done) => {
+    it('should response `400` when attachment file size is greater than limit', (done) => {
       sandbox.spy(ds, 'putS3')
-      ds.setDBClient(null)
+      sandbox.spy(ds, 'saveDB')
+
       req(app)
         .post('/')
         .field('firstName', firstNameMock)
         .field('lastName', lastNameMock)
-        .attach('attachment', uploadFilePath)
-        .expect(500, (err, res) => {
+        .attach('attachment', tooBigFile)
+        .expect(400, (err, res) => {
           assert.ifError(err)
-          assert(ds.putS3.calledOnce)
-          assert.deepEqual(res.body, { error: 'DataBase is not available now' })
+          assert.deepEqual(res.body, { error: 'File too large' })
+          assert(!ds.putS3.called)
+          assert(!ds.saveDB.called)
           done()
         })
-
-        setTimeout(() => {
-          s3Client.request.emit('response', { statusCode: 200 })
-        }, 100)
     })
 
     it('should response `500` when S3 is not available', (done) => {
@@ -205,6 +203,26 @@ describe('API', () => {
       }, 100)
     })
 
+    it('should response `500` when DB is not available', (done) => {
+      sandbox.spy(ds, 'putS3')
+      ds.setDBClient(null)
+      req(app)
+        .post('/')
+        .field('firstName', firstNameMock)
+        .field('lastName', lastNameMock)
+        .attach('attachment', uploadFilePath)
+        .expect(500, (err, res) => {
+          assert.ifError(err)
+          assert(ds.putS3.calledOnce)
+          assert.deepEqual(res.body, { error: 'DataBase is not available now' })
+          done()
+        })
+
+        setTimeout(() => {
+          s3Client.request.emit('response', { statusCode: 200 })
+        }, 100)
+    })
+
     it('should response `500` on errors during database write', (done) => {
       sandbox.spy(ds, 'putS3')
       sandbox.stub(ds, 'saveDB', (collectionName, opts, cb) => cb(new Error('test error')))
@@ -223,24 +241,6 @@ describe('API', () => {
         setTimeout(() => {
           s3Client.request.emit('response', { statusCode: 200 })
         }, 100)
-    })
-
-    it('should response `400` when attachment file size is greater than limit', (done) => {
-      sandbox.spy(ds, 'putS3')
-      sandbox.spy(ds, 'saveDB')
-
-      req(app)
-        .post('/')
-        .field('firstName', firstNameMock)
-        .field('lastName', lastNameMock)
-        .attach('attachment', tooBigFile)
-        .expect(400, (err, res) => {
-          assert.ifError(err)
-          assert.deepEqual(res.body, { error: 'File too large' })
-          assert(!ds.putS3.called)
-          assert(!ds.saveDB.called)
-          done()
-        })
     })
   })
 })
